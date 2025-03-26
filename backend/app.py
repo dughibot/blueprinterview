@@ -1,5 +1,6 @@
 from flask import Flask
-from providers.postgres import db
+from resources.postgres import db
+from flask_migrate import Migrate
 
 
 def create_app() -> Flask:
@@ -11,13 +12,14 @@ def create_app() -> Flask:
     )
     # initialize db connection with the application
     db.init_app(app)
+    migrate = Migrate(app, db)
 
     # register our endpoints
-    from controllers import screener
+    from controllers import screener_api
 
-    app.register_blueprint(screener.bp)
+    app.register_blueprint(screener_api.bp)
 
     return app
 
 
-create_app()
+app = create_app()
