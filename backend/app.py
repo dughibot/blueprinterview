@@ -1,6 +1,7 @@
 from flask import Flask
 from resources.postgres import db
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 
 def create_app() -> Flask:
@@ -13,6 +14,7 @@ def create_app() -> Flask:
     # initialize db connection with the application
     db.init_app(app)
     migrate = Migrate(app, db)
+    CORS(app)  # Enable CORS for all routes
 
     # register our endpoints
     from controllers import screener_api
