@@ -1,5 +1,6 @@
 from app import app
 from resources.postgres import Screener, db, Domain, Question
+from providers.screener import get_screener_by_id
 from sqlalchemy import update
 
 
@@ -74,11 +75,13 @@ question_domains = [
 ]
 
 with app.app_context():
-    for domain in domain_data:
-        db.session.add(Domain(name=domain))
-    screener = Screener.from_dict(screener_data)
-    for qd_mapping in question_domains:
-        screener.questions[qd_mapping["question_id"]].domain = qd_mapping["domain"]
-    db.session.add(screener)
+    screener = get_screener_by_id("abcd-123")
+    if screener is None:
+        for domain in domain_data:
+            db.session.add(Domain(name=domain))
+        screener = Screener.from_dict(screener_data)
+        for qd_mapping in question_domains:
+            screener.questions[qd_mapping["question_id"]].domain = qd_mapping["domain"]
+        db.session.add(screener)
 
-    db.session.commit()
+        db.session.commit()

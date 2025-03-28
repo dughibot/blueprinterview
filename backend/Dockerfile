@@ -7,5 +7,5 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 EXPOSE 5000
 COPY . .
-RUN flask db upgrade -d db_migrations
-CMD ["flask", "run", "--debug"]
+RUN chmod +x execute.sh
+CMD ["sh", "./execute.sh"]

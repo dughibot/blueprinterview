@@ -10,7 +10,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "postgresql://postgres:password@postgres:5432/postgres"
+        "postgresql://app_user:password@database:5432/screeners_db"
     )
     # initialize db connection with the application
     db.init_app(app)

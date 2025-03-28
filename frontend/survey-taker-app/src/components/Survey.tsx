@@ -5,7 +5,7 @@ import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { useCallback, useState, useEffect, useRef } from 'react';
 
-const backendUrlBase = 'http://backend:5000/screener';
+const backendUrlBase = 'http://localhost:8080/screener';
 
 interface QuestionJson {
     question_id: string,
