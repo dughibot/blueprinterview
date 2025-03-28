@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, jsonify, abort
 from resources.postgres import db
 from flask_migrate import Migrate
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 
 def create_app() -> Flask:
@@ -25,3 +26,9 @@ def create_app() -> Flask:
 
 
 app = create_app()
+
+
+# add a bit of very basic error handling
+@app.errorhandler(HTTPException)
+def resource_not_found(e):
+    return jsonify(error=str(e)), e.code
