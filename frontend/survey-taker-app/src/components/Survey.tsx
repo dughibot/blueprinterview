@@ -5,6 +5,8 @@ import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
 import { useCallback, useState, useEffect, useRef } from 'react';
 
+const backendUrlBase = 'http://backend:5000/screener';
+
 interface QuestionJson {
     question_id: string,
     title: string
@@ -46,7 +48,7 @@ export default function SurveyComponent() {
     useEffect(() => {
         async function fetchSurveyJson() {
             try {
-                const response = await fetch("http://localhost:9000/screener/abcd-123", {
+                const response = await fetch(`${backendUrlBase}/abcd-123`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -112,7 +114,7 @@ export default function SurveyComponent() {
 function getSurveyResults(json: object) {
     const answerData = Object.entries(json).reduce((prevVal: object[], [qid, ans]) => prevVal.concat({"question_id":qid, "value": ans}), [])
     console.log(answerData)
-    fetch("http://localhost:9000/screener/abcd-123/answers", {
+    fetch(`${backendUrlBase}/abcd-123/answers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;',

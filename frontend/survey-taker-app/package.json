@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
+    "start": "parcel -p 5000",
     "build": "parcel build"
   },
   "dependencies": {

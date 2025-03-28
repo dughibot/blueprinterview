@@ -1,0 +1,11 @@
+services:
+  backend:
+    build: ./backend/Dockerfile
+    ports:
+      - "8080:5000"
+  frontend:
+    build: ./frontend/Dockerfile
+    ports:
+      - "8000:5000"
+  postgres:
+    image: "postgres:alpine"
