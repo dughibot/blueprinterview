@@ -11,6 +11,168 @@ The backend API needed the ability to serve up the JSON describing a screener, a
 
 The next steps for a project like this would probably be to actually save the returned list somewhere, instead of returning it to the frontend. We'd then want to build a way for the clinician to access the results and approve the assessments to be given. Alternatively, we could let the frontend just give those assessments to the patient directly and immediately. It depends on how sure we are about the scoring for our diagnostic screener.
 
+# What I built
+## Database
+I chose to store the questions and screener data in Postgres. A large part of this decision was made due to my familiarity with postgres right now, which meant that it would be easy to get going. However, I think it's a reasonable choice for this system to store at least the screener data. For the screener itself, since we're likely not going to modify the shape of that frequently, the highly structured nature of SQL isn't a huge drawback, and gaining ACID compliant transactions is nice. Some NoSQL databases also offer that, but they tend to try to be more available than consistent, where relational databases tend to try to be more consistent. 
+
+We could store answers there too, but we'd have to handle a lot more data as this gets used more and use data partitioning to horizontally scale it. Access patterns would decide how we would need to partition the data. My first guess would be that we'd want to do it by user, so all of a single user's answers are on the same partition. However, if we're never retrieving a specific users answers, and are usually trying to get things like "What was the average answer to this question," we'd want to be partitioning it differently. It might be better to store answers somewhere like DynamoDB, where availability is of a higher concern.
+
+## Backend
+I used the flask framework to build an API server in python. I've built apps with Python in flask before and figured it would be a great way to get started and build it quickly. I built a controller layer to handle the API endpoints, a provider layer to help abstract away database choices, and a resource layer to actually deal with the database directly. I used flask-sqlalchemy in order to easily handle the SQLAlchemy sessions with flask applicaton context. I used flask-cors to handle our CORS list (even though it's actually just allowing everything right now), and flask-migrate to do our database schema migrations. And I chose marshmallow as an input/API request data validation tool.
+
+## Frontend
+I used Parcel to build a React based web app in typescript. I don't have a lot of frontend experience, so using a tool like parcel that has great documentation and guides for building a react app was very helpful for me. I evaluated it briefly vs Vite and Rsbuild, and found Parcel to seem the easiest to get started with and found the documentation the clearest. I didn't feel that I needed the speed of Vite or Rsbuild. Again, since I don't have a ton of experience and figured that custom behavior and looks was not super important, I searched for a library to create the actual survey component and found SurveyJS to be very well documented and full featured. So all I really needed to do was put together an app that could call the backend endpoints and convert the json into the shape that SurveyJS needed.
+
+## API Contract
+`GET /screener/<screener-id>`
+This endpoint returns the json for the screener. The JSON returned looks like:
+<details>
+  <summary>Example JSON</summary>
+
+```{
+  "id": "abcd-123",
+  "name": "BPDS",
+  "disorder": "Cross-Cutting",
+  "content": {
+    "sections": [
+      {
+        "type": "standard",
+        "title": "During the past TWO (2) WEEKS, how much (or how often) have you been bothered by the following problems?",
+        "answers": [
+          {
+            "title": "Not at all",
+            "value": 0
+          },
+          {
+            "title": "Rare, less than a day or two",
+            "value": 1
+          },
+          {
+            "title": "Several days",
+            "value": 2
+          },
+          {
+            "title": "More than half the days",
+            "value": 3
+          },
+          {
+            "title": "Nearly every day",
+            "value": 4
+          }
+        ],
+        "questions": [
+          {
+            "question_id": "question_a",
+            "title": "Little interest or pleasure in doing things?"
+          },
+          {
+            "question_id": "question_b",
+            "title": "Feeling down, depressed, or hopeless?"
+          },
+          {
+            "question_id": "question_c",
+            "title": "Sleeping less than usual, but still have a lot of energy?"
+          },
+          {
+            "question_id": "question_d",
+            "title": "Starting lots more projects than usual or doing more risky things than usual?"
+          },
+          {
+            "question_id": "question_e",
+            "title": "Feeling nervous, anxious, frightened, worried, or on edge?"
+          },
+          {
+            "question_id": "question_f",
+            "title": "Feeling panic or being frightened?"
+          },
+          {
+            "question_id": "question_g",
+            "title": "Avoiding situations that make you feel anxious?"
+          },
+          {
+            "question_id": "question_h",
+            "title": "Drinking at least 4 drinks of any kind of alcohol in a single day?"
+          }
+        ]
+      }
+    ],
+    "display_name": "BDS"
+  },
+  "full_name": "Blueprint Diagnostic Screener"
+}
+```
+</details>
+
+`POST /screener/<screener-id>/answers`
+This endpoint expects the answers to be sent and returns a list of the assessments to use based on the answers
+<details>
+<summary>Expected Request JSON:</summary>
+
+```
+{
+    "answers": (required) [
+        {
+            "value": (required) Integer,
+            "question_id": (required) String
+        }, ...
+    ]
+}
+```
+An example:
+```
+{
+  "answers": [
+    {
+      "value": 1,
+      "question_id": "question_a"
+    },
+    {
+      "value": 0,
+      "question_id": "question_b"
+    },
+    {
+      "value": 2,
+      "question_id": "question_c"
+    },
+    {
+      "value": 3,
+      "question_id": "question_d"
+    },
+    {
+      "value": 1,
+      "question_id": "question_e"
+    },
+    {
+      "value": 0,
+      "question_id": "question_f"
+    },
+    {
+      "value": 1,
+      "question_id": "question_g"
+    },
+    {
+      "value": 0,
+      "question_id": "question_h"
+    }
+  ]
+}
+```
+</details>
+<details>
+<summary>Response JSON</summary>
+
+```
+{
+  "results": (required) String[] // Note that the only possible values in this list are: "ASRM", "PHQ-9", "ASSIST"
+}
+```
+An Example:
+```
+{
+  "results": ["ASRM", "PHQ-9"]
+}
+```
+</details>
 
 # How to Actually Deploy in Prod:
 ## Database:
