@@ -1,7 +1,8 @@
 # Getting Started:
-1. Make sure you have Docker installed on your machine
-2. From the root directory, run `docker compose up`
-3. Go to http://localhost:8000 to access the screener
+1. Clone this repository
+2. Make sure you have Docker installed on your machine
+3. From the root directory, run `docker compose up`
+4. Go to http://localhost:8000 to access the screener
 
 # Problem Description:
 The goal for this project was to build a miniature version of a web app that could be used to help a clinician choose which standardized clinical assessments to assign to a patient. 
